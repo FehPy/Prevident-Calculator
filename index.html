@@ -3,358 +3,1117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Auxílio Acidente</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    
+    <title>Calculadora de Auxílio Acidente | MLR Advogados</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .error-msg { font-size: 0.75rem; color: #ef4444; margin-top: 0.25rem; display: none; }
-        .input-error { border-color: #ef4444 !important; }
+        /* ── VARIÁVEIS ── */
+        :root {
+            --navy:   #0f2240;
+            --blue:   #1a56db;
+            --blue-light: #e8f0fe;
+            --gold:   #c9a84c;
+            --gray-50:  #f8f9fc;
+            --gray-100: #eef1f7;
+            --gray-300: #b0b8cc;
+            --gray-500: #6b7590;
+            --gray-700: #374160;
+            --white:  #ffffff;
+            --success: #0d7f56;
+            --radius: 12px;
+            --shadow: 0 4px 24px rgba(15,34,64,0.10);
+            --shadow-lg: 0 12px 48px rgba(15,34,64,0.16);
+        }
 
-        /* Animação dos cards de resultado */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--gray-50);
+            color: var(--navy);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── HEADER ── */
+        header {
+            background: var(--navy);
+            padding: 18px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            flex-direction: column;
+            line-height: 1;
+        }
+        .logo-sigla {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: var(--blue);
+            letter-spacing: 2px;
+        }
+        .logo-sub {
+            font-size: 0.7rem;
+            color: var(--gray-300);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 1px;
+        }
+
+        .header-badge {
+            font-size: 0.72rem;
+            color: var(--gray-300);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 5px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            background: linear-gradient(135deg, var(--navy) 0%, #1a3260 100%);
+            padding: 52px 32px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 70% 50%, rgba(26,86,219,0.18) 0%, transparent 60%);
+        }
+        .hero-tag {
+            display: inline-block;
+            background: rgba(201,168,76,0.15);
+            color: var(--gold);
+            border: 1px solid rgba(201,168,76,0.3);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 5px 14px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+        }
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.7rem, 4vw, 2.6rem);
+            color: var(--white);
+            line-height: 1.2;
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .hero p {
+            color: var(--gray-300);
+            font-size: 0.95rem;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* ── BARRA DE PROGRESSO ── */
+        .progress-wrapper {
+            max-width: 620px;
+            margin: 32px auto 0;
+            position: relative;
+        }
+        .progress-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            position: relative;
+        }
+        .progress-line {
+            flex: 1;
+            height: 2px;
+            background: rgba(255,255,255,0.15);
+            position: relative;
+            max-width: 140px;
+        }
+        .progress-line-fill {
+            height: 100%;
+            background: var(--blue);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .step-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+            background: var(--navy);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gray-300);
+            transition: all 0.4s ease;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+        .step-dot.active {
+            border-color: var(--blue);
+            background: var(--blue);
+            color: white;
+            box-shadow: 0 0 0 4px rgba(26,86,219,0.25);
+        }
+        .step-dot.done {
+            border-color: var(--success);
+            background: var(--success);
+            color: white;
+        }
+        .step-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding: 0 2px;
+        }
+        .step-label {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            text-align: center;
+            flex: 1;
+            transition: color 0.4s;
+        }
+        .step-label.active { color: rgba(255,255,255,0.85); }
+        .step-label.done   { color: rgba(255,255,255,0.5); }
+
+        /* ── MAIN CONTAINER ── */
+        main {
+            flex: 1;
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 32px 20px 60px;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-100);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 28px 32px 0;
+        }
+        .card-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            color: var(--navy);
+        }
+        .card-header p {
+            color: var(--gray-500);
+            font-size: 0.88rem;
+            margin-top: 5px;
+        }
+        .card-divider {
+            height: 1px;
+            background: var(--gray-100);
+            margin: 20px 0 0;
+        }
+        .card-body { padding: 28px 32px; }
+
+        /* ── ETAPAS ── */
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.35s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── FORM ── */
+        .field-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .field-group.single { grid-template-columns: 1fr; }
+        .field-group.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            letter-spacing: 0.3px;
+        }
+        label .opt {
+            font-weight: 400;
+            color: var(--gray-300);
+            font-size: 0.75rem;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid var(--gray-100);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.92rem;
+            color: var(--navy);
+            background: var(--gray-50);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+        }
+        input:focus, select:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(26,86,219,0.1);
+            background: white;
+        }
+        .input-prefix {
+            position: relative;
+        }
+        .input-prefix span {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-300);
+            font-size: 0.88rem;
+            pointer-events: none;
+        }
+        .input-prefix input { padding-left: 36px; }
+
+        .field-hint {
+            font-size: 0.74rem;
+            color: var(--gray-300);
+        }
+        .field-error {
+            font-size: 0.74rem;
+            color: #e53e3e;
+            display: none;
+        }
+        .input-err { border-color: #e53e3e !important; }
+
+        /* ── BOTÕES ── */
+        .btn-primary {
+            background: var(--blue);
+            color: white;
+            border: none;
+            padding: 13px 32px;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 12px rgba(26,86,219,0.3);
+        }
+        .btn-primary:hover {
+            background: #1446c0;
+            box-shadow: 0 4px 20px rgba(26,86,219,0.4);
+        }
+        .btn-primary:active { transform: scale(0.98); }
+
+        .btn-secondary {
+            background: white;
+            color: var(--gray-700);
+            border: 1.5px solid var(--gray-100);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover { background: var(--gray-50); border-color: var(--gray-300); }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* ── RESULTADO ── */
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
         .result-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--gray-100);
         }
-        .result-card.updated {
-            animation: pulse-in 0.4s ease;
+        .result-card.monthly { background: var(--blue-light); border-color: #c3d5f8; }
+        .result-card.retro   { background: #f0fdf7; border-color: #a7e6cb; }
+
+        .result-card .rc-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
         }
-        @keyframes pulse-in {
-            0%   { transform: scale(1); }
-            50%  { transform: scale(1.03); }
-            100% { transform: scale(1); }
+        .result-card.monthly .rc-label { color: #1a46a8; }
+        .result-card.retro   .rc-label { color: #0d7f56; }
+
+        .result-card .rc-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--navy);
+            line-height: 1;
+        }
+        .result-card .rc-sub {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-top: 6px;
         }
 
-        /* Tooltip */
-        .tooltip-container { position: relative; display: inline-block; cursor: pointer; }
-        .tooltip-text {
-            visibility: hidden; opacity: 0;
-            background-color: #1e293b; color: #fff;
-            font-size: 0.75rem; border-radius: 6px;
-            padding: 6px 10px; position: absolute;
-            z-index: 10; bottom: 130%; left: 50%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-            transition: opacity 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        .result-total {
+            background: var(--navy);
+            color: white;
+            border-radius: 10px;
+            padding: 22px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
         }
-        .tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; }
+        .result-total .rt-label {
+            font-size: 0.78rem;
+            color: var(--gray-300);
+            letter-spacing: 0.5px;
+        }
+        .result-total .rt-sub {
+            font-size: 0.72rem;
+            color: var(--gray-500);
+            margin-top: 3px;
+        }
+        .result-total .rt-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        /* Tabela detalhamento */
+        .detalhe-toggle {
+            background: none;
+            border: none;
+            color: var(--blue);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.83rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0;
+            margin-bottom: 12px;
+        }
+        .detalhe-body { display: none; }
+        .detalhe-body.open { display: block; }
+
+        .detalhe-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.83rem;
+            margin-bottom: 20px;
+        }
+        .detalhe-table tr:nth-child(even) td { background: var(--gray-50); }
+        .detalhe-table td {
+            padding: 9px 12px;
+            color: var(--gray-700);
+            border-bottom: 1px solid var(--gray-100);
+        }
+        .detalhe-table td:last-child {
+            text-align: right;
+            font-weight: 500;
+            color: var(--navy);
+        }
+        .detalhe-table tr.highlight td {
+            background: var(--blue-light);
+            font-weight: 700;
+            color: var(--blue);
+        }
+
+        /* Aviso */
+        .aviso {
+            background: #fffbeb;
+            border: 1px solid #f6d860;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.8rem;
+            color: #7d6012;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .aviso strong { color: #5c4509; }
+
+        /* ── ETAPA 2 — PERGUNTAS ── */
+        .pergunta-bloco {
+            margin-bottom: 28px;
+        }
+        .pergunta-bloco h3 {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .opcoes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .opcoes-grid.single-col { grid-template-columns: 1fr; }
+
+        .opcao {
+            border: 1.5px solid var(--gray-100);
+            border-radius: 8px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.88rem;
+            color: var(--gray-700);
+            background: var(--gray-50);
+            user-select: none;
+        }
+        .opcao:hover { border-color: var(--blue); background: var(--blue-light); }
+        .opcao.selected {
+            border-color: var(--blue);
+            background: var(--blue-light);
+            color: var(--blue);
+            font-weight: 600;
+        }
+        .opcao .opcao-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--gray-300);
+            flex-shrink: 0;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .opcao.selected .opcao-icon {
+            border-color: var(--blue);
+            background: var(--blue);
+        }
+        .opcao.selected .opcao-icon::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        /* Checkbox style */
+        .opcao.checkbox .opcao-icon {
+            border-radius: 4px;
+        }
+        .opcao.checkbox.selected .opcao-icon::after {
+            content: '✓';
+            font-size: 11px;
+            border-radius: 0;
+            background: none;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* Sucesso final */
+        .sucesso {
+            text-align: center;
+            padding: 40px 20px;
+            display: none;
+        }
+        .sucesso.active { display: block; animation: fadeIn 0.4s ease; }
+        .sucesso-icon {
+            width: 64px;
+            height: 64px;
+            background: #e6f9f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 1.8rem;
+        }
+        .sucesso h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: var(--navy);
+            margin-bottom: 10px;
+        }
+        .sucesso p { color: var(--gray-500); font-size: 0.9rem; line-height: 1.6; max-width: 380px; margin: 0 auto; }
+
+        /* ── FOOTER ── */
+        footer {
+            background: var(--navy);
+            padding: 24px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        footer .logo-sigla { font-size: 1.4rem; }
+        .footer-copy {
+            font-size: 0.72rem;
+            color: var(--gray-500);
+        }
+
+        /* ── RESPONSIVO ── */
+        @media (max-width: 600px) {
+            header { padding: 14px 20px; }
+            .hero  { padding: 40px 20px 28px; }
+            .card-body, .card-header { padding-left: 20px; padding-right: 20px; }
+            .field-group, .field-group.triple { grid-template-columns: 1fr; }
+            .result-grid { grid-template-columns: 1fr; }
+            .opcoes-grid { grid-template-columns: 1fr; }
+            .result-total { flex-direction: column; align-items: flex-start; gap: 8px; }
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+<body>
 
-    <!-- Cabeçalho -->
-    <header class="w-full bg-white shadow-sm py-6">
-        <div class="max-w-5xl mx-auto px-6">
-            <h1 class="text-2xl font-bold text-gray-900">Calculadora de Auxílio Acidente</h1>
-            <p class="text-gray-500 text-sm mt-1">Estimativa do valor de Auxílio Acidente a receber.</p>
+<!-- HEADER -->
+<header>
+    <div class="logo">
+        <span class="logo-sigla">MLR</span>
+        <span class="logo-sub">Advogados</span>
+    </div>
+    <span class="header-badge">Cálculo gratuito · Sem compromisso</span>
+</header>
+
+<!-- HERO + PROGRESSO -->
+<div class="hero">
+    <div class="hero-tag">Auxílio-Acidente INSS</div>
+    <h1>Descubra quanto você<br>tem direito a receber</h1>
+    <p>Calcule em segundos o valor estimado do seu benefício e retroativos.</p>
+
+    <div class="progress-wrapper">
+        <div class="progress-steps">
+            <div class="step-dot active" id="dot-1">1</div>
+            <div class="progress-line"><div class="progress-line-fill" id="prog-line"></div></div>
+            <div class="step-dot" id="dot-2">2</div>
         </div>
-    </header>
+        <div class="step-labels">
+            <span class="step-label active" id="lbl-1">Calcular benefício</span>
+            <span class="step-label" id="lbl-2">Informações do caso</span>
+        </div>
+    </div>
+</div>
 
-    <!-- Conteúdo Principal -->
-    <main class="flex-grow max-w-5xl mx-auto w-full px-6 py-10">
-        
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 md:p-8">
-            
-            <!-- Aviso informativo -->
-            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-8 flex gap-3">
-                <i data-lucide="info" class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"></i>
-                <p class="text-sm text-amber-800">
-                    Este cálculo é uma <strong>estimativa</strong> para fins informativos. Os valores reais podem variar conforme as circunstâncias do caso. Consulte um advogado para análise completa.
-                </p>
+<!-- CONTEÚDO PRINCIPAL -->
+<main>
+    <div class="card">
+
+        <!-- ════ ETAPA 1 — CALCULADORA ════ -->
+        <div class="step active" id="step-1">
+            <div class="card-header">
+                <h2>Calcule seu Auxílio-Acidente</h2>
+                <p>Preencha os dados abaixo para estimar o valor do benefício e retroativos.</p>
+                <div class="card-divider"></div>
             </div>
+            <div class="card-body">
 
-            <!-- Inputs -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                
-                <!-- Input Salário da Época -->
-                <div class="flex flex-col">
-                    <label for="salarioEpoca" class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
-                        Salário da Época (R$)
-                        <span class="tooltip-container">
-                            <i data-lucide="help-circle" class="w-4 h-4 text-gray-400"></i>
-                            <span class="tooltip-text">Salário de benefício na data do acidente</span>
-                        </span>
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">R$</span>
-                        <input type="number" id="salarioEpoca" placeholder="Ex: 3000.00" step="0.01" min="0"
-                            class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                <!-- Salário -->
+                <div class="field-group single">
+                    <div class="field">
+                        <label>Média salarial aproximada (R$)</label>
+                        <div class="input-prefix">
+                            <span>R$</span>
+                            <input type="number" id="mediaSalarial" placeholder="Ex: 3.000,00" min="0" step="0.01">
+                        </div>
+                        <span class="field-hint">Média dos seus salários de contribuição ao INSS.</span>
+                        <span class="field-error" id="err-salario">Informe um valor válido maior que zero.</span>
                     </div>
-                    <span class="text-xs text-gray-500 mt-1">Mínimo: R$ 1.518,00 (SM 2025)</span>
-                    <span id="error-salario" class="error-msg">Informe um valor válido.</span>
                 </div>
 
-                <!-- Input Meses de Retroativos -->
-                <div class="flex flex-col">
-                    <label for="mesesRetroativos" class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
-                        Meses de Retroativos
-                        <span class="tooltip-container">
-                            <i data-lucide="help-circle" class="w-4 h-4 text-gray-400"></i>
-                            <span class="tooltip-text">Meses em que o benefício já deveria ter sido pago</span>
-                        </span>
-                    </label>
-                    <input type="number" id="mesesRetroativos" min="1" max="65" placeholder="Ex: 24"
-                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-gray-600">
-                    <span class="text-xs text-gray-500 mt-1">Máximo: 65 meses (5 anos + 13º).</span>
-                    <span id="error-retroativos" class="error-msg">Informe entre 1 e 65 meses.</span>
-                </div>
-
-                <!-- Input Duração do Processo -->
-                <div class="flex flex-col">
-                    <label for="duracaoProcesso" class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
-                        Duração do Processo (meses)
-                        <span class="tooltip-container">
-                            <i data-lucide="help-circle" class="w-4 h-4 text-gray-400"></i>
-                            <span class="tooltip-text">Tempo estimado até a conclusão do processo judicial</span>
-                        </span>
-                    </label>
-                    <input type="number" id="duracaoProcesso" min="1" placeholder="Ex: 18" value="18"
-                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-gray-600">
-                    <span class="text-xs text-gray-500 mt-1">Tempo médio: 18 meses.</span>
-                    <span id="error-duracao" class="error-msg">Informe um número válido.</span>
-                </div>
-
-            </div>
-
-            <!-- Botões -->
-            <div class="flex flex-wrap gap-4 mb-10">
-                <button onclick="calcular()" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors shadow-md flex items-center gap-2">
-                    <i data-lucide="calculator" class="w-5 h-5"></i>
-                    Calcular
-                </button>
-                
-                <button onclick="limpar()" 
-                    class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-3 px-8 rounded-lg transition-colors flex items-center gap-2">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                    Limpar
-                </button>
-            </div>
-
-            <!-- Resultados -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="resultado-section">
-                
-                <!-- Card 1 - Valor Mensal -->
-                <div class="result-card bg-blue-50 rounded-lg p-6 border border-blue-100">
-                    <span class="text-xs font-bold text-blue-800 uppercase tracking-wider">Valor Mensal (50%)</span>
-                    <div class="mt-2 text-2xl font-bold text-gray-900" id="res-valor-mensal">R$ 0,00</div>
-                    <div class="text-xs text-gray-500 mt-1">50% do salário da época</div>
-                </div>
-
-                <!-- Card 2 - Total de Meses -->
-                <div class="result-card bg-gray-50 rounded-lg p-6 border border-gray-200">
-                    <span class="text-xs font-bold text-gray-600 uppercase tracking-wider">Total de Meses</span>
-                    <div class="mt-2 text-2xl font-bold text-gray-900" id="res-meses-total">0</div>
-                    <div class="text-xs text-gray-400 mt-1" id="res-detalhe-meses">Retroativos: 0 | Processo: 0</div>
-                </div>
-
-                <!-- Card 3 - Valor Bruto -->
-                <div class="result-card bg-indigo-50 rounded-lg p-6 border border-indigo-100">
-                    <span class="text-xs font-bold text-indigo-800 uppercase tracking-wider">Valor Bruto Total</span>
-                    <div class="mt-2 text-2xl font-bold text-gray-900" id="res-bruto">R$ 0,00</div>
-                    <div class="text-xs text-gray-400 mt-1">Antes dos honorários (40%)</div>
-                </div>
-
-            </div>
-
-            <!-- Detalhamento expandido (aparece após cálculo) -->
-            <div id="detalhamento" class="hidden mt-6 border-t border-gray-100 pt-6">
-                <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4">Detalhamento do Cálculo</h2>
-                <div class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
-                    <table class="w-full text-sm">
-                        <tbody id="tabela-detalhamento">
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Card Resultado Final em destaque -->
-                <div class="result-card bg-gray-900 rounded-xl p-6 border border-gray-800 text-white shadow-lg mt-6 flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Valor Líquido Estimado</span>
-                        <div class="mt-1 text-xs text-gray-500">Após dedução de honorários advocatícios (40%)</div>
+                <!-- Anos -->
+                <div class="field-group">
+                    <div class="field">
+                        <label>Ano do acidente</label>
+                        <input type="number" id="anoAcidente" placeholder="Ex: 2020" min="1990" max="2025">
+                        <span class="field-hint">Ano em que ocorreu o acidente.</span>
+                        <span class="field-error" id="err-ano-acidente">Informe um ano válido.</span>
                     </div>
-                    <div class="text-3xl font-bold text-white" id="res-total">R$ 0,00</div>
+                    <div class="field">
+                        <label>Ano atual / ano do cálculo</label>
+                        <input type="number" id="anoAtual" placeholder="Ex: 2025" min="1990" max="2030">
+                        <span class="field-hint">Deixe em branco para usar o ano atual.</span>
+                        <span class="field-error" id="err-ano-atual">Informe um ano válido.</span>
+                    </div>
                 </div>
-            </div>
 
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-auto py-8">
-        <div class="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center md:justify-between gap-6 w-full">
-            <div class="flex items-center gap-3">
-                <div class="text-sm">
-                    <p class="font-bold text-gray-900">BMZ - Belin, Medeiros e Zaiats</p>
-                    <p class="text-gray-500">Advogados e Associados</p>
+                <!-- Meses manual (opcional) -->
+                <div class="field-group single">
+                    <div class="field">
+                        <label>Meses desde o acidente <span class="opt">(opcional — preenche automaticamente)</span></label>
+                        <input type="number" id="mesesManuais" placeholder="Ex: 60" min="1" max="600">
+                        <span class="field-hint">Se preferir, informe manualmente. Caso contrário, calculamos pelos anos acima.</span>
+                        <span class="field-error" id="err-meses">Informe um número válido.</span>
+                    </div>
                 </div>
-            </div>
-            <div class="flex-1 flex justify-center">
-                <img src="Logo-BMZ.png" alt="Logo BMZ" class="h-20 object-contain" onerror="this.style.display='none'">
-            </div>
-            <div class="text-xs text-gray-400 text-center md:text-right">
-                &copy; <span id="anoAtual"></span> Todos os direitos reservados.
+
+                <div class="btn-row">
+                    <button class="btn-primary" onclick="calcular()">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 7H6a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-3M13 3h8m0 0v8m0-8L11 13"/></svg>
+                        Calcular agora
+                    </button>
+                    <button class="btn-secondary" onclick="limpar()">Limpar</button>
+                </div>
+
+                <!-- RESULTADO (oculto até calcular) -->
+                <div id="resultado" style="display:none; margin-top:32px;">
+                    <div style="height:1px;background:var(--gray-100);margin-bottom:24px;"></div>
+
+                    <div class="result-grid">
+                        <div class="result-card monthly">
+                            <div class="rc-label">Valor Mensal</div>
+                            <div class="rc-value" id="res-mensal">R$ 0,00</div>
+                            <div class="rc-sub">50% da média salarial</div>
+                        </div>
+                        <div class="result-card retro">
+                            <div class="rc-label">Retroativo Estimado</div>
+                            <div class="rc-value" id="res-retro">R$ 0,00</div>
+                            <div class="rc-sub" id="res-retro-sub">— meses em aberto</div>
+                        </div>
+                    </div>
+
+                    <div class="result-total">
+                        <div>
+                            <div class="rt-label">TOTAL ESTIMADO BRUTO</div>
+                            <div class="rt-sub">Antes de honorários advocatícios</div>
+                        </div>
+                        <div class="rt-value" id="res-total">R$ 0,00</div>
+                    </div>
+
+                    <!-- Detalhamento -->
+                    <button class="detalhe-toggle" onclick="toggleDetalhe()">
+                        <svg id="detalhe-arrow" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="transition:transform 0.2s"><path d="M6 9l6 6 6-6"/></svg>
+                        Ver detalhamento do cálculo
+                    </button>
+                    <div class="detalhe-body" id="detalhe-body">
+                        <table class="detalhe-table" id="detalhe-table"></table>
+                    </div>
+
+                    <div class="aviso">
+                        <strong>⚠️ Estimativa informativa.</strong> Este cálculo é apenas uma estimativa. O valor real do benefício depende da análise do histórico de contribuições do segurado no INSS. Consulte um advogado para avaliação completa do seu caso.
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn-primary" onclick="irParaEtapa2()">
+                            Analisar meu caso gratuitamente
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </div>
-    </footer>
 
-    <script>
-        // --- CONSTANTES ---
-        var CONST_SALARIO_MINIMO        = 1518.00;
-        var CONST_PERCENTUAL_AUXILIO    = 0.50;
-        var CONST_PERCENTUAL_HONORARIOS = 0.40;
-        var CONST_MAX_MESES_RETROATIVOS = 65;
+        <!-- ════ ETAPA 2 — PERGUNTAS ESTRATÉGICAS ════ -->
+        <div class="step" id="step-2">
+            <div class="card-header">
+                <h2>Conte-nos sobre seu caso</h2>
+                <p>Essas informações ajudam nossos advogados a entender melhor a sua situação.</p>
+                <div class="card-divider"></div>
+            </div>
+            <div class="card-body">
 
-        function formatarMoeda(valor) {
-            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+                <!-- P1: Tipo de caso -->
+                <div class="pergunta-bloco">
+                    <h3>1 · Tipo de caso</h3>
+                    <div class="opcoes-grid">
+                        <div class="opcao" onclick="selecionarOpcao(this,'tipo-caso')" data-group="tipo-caso" data-val="acidente-trabalho">
+                            <div class="opcao-icon"></div> Acidente de trabalho
+                        </div>
+                        <div class="opcao" onclick="selecionarOpcao(this,'tipo-caso')" data-group="tipo-caso" data-val="doenca-ocupacional">
+                            <div class="opcao-icon"></div> Doença ocupacional
+                        </div>
+                        <div class="opcao" onclick="selecionarOpcao(this,'tipo-caso')" data-group="tipo-caso" data-val="acidente-trajeto">
+                            <div class="opcao-icon"></div> Acidente de trajeto
+                        </div>
+                        <div class="opcao" onclick="selecionarOpcao(this,'tipo-caso')" data-group="tipo-caso" data-val="nao-sei">
+                            <div class="opcao-icon"></div> Não tenho certeza
+                        </div>
+                    </div>
+                    <span class="field-error" id="err-tipo" style="display:none;margin-top:8px;">Selecione uma opção.</span>
+                </div>
+
+                <!-- P2: Data aproximada -->
+                <div class="pergunta-bloco">
+                    <h3>2 · Quando começou o problema?</h3>
+                    <div class="opcoes-grid">
+                        <div class="opcao" onclick="selecionarOpcao(this,'data-prob')" data-group="data-prob" data-val="menos-1">
+                            <div class="opcao-icon"></div> Menos de 1 ano
+                        </div>
+                        <div class="opcao" onclick="selecionarOpcao(this,'data-prob')" data-group="data-prob" data-val="1-3">
+                            <div class="opcao-icon"></div> Entre 1 e 3 anos
+                        </div>
+                        <div class="opcao" onclick="selecionarOpcao(this,'data-prob')" data-group="data-prob" data-val="3-5">
+                            <div class="opcao-icon"></div> Entre 3 e 5 anos
+                        </div>
+                        <div class="opcao" onclick="selecionarOpcao(this,'data-prob')" data-group="data-prob" data-val="mais-5">
+                            <div class="opcao-icon"></div> Mais de 5 anos
+                        </div>
+                    </div>
+                    <span class="field-error" id="err-data" style="display:none;margin-top:8px;">Selecione uma opção.</span>
+                </div>
+
+                <!-- P3: Recebe algo -->
+                <div class="pergunta-bloco">
+                    <h3>3 · Recebe algum benefício atualmente?</h3>
+                    <div class="opcoes-grid">
+                        <div class="opcao" onclick="selecionarOpcao(this,'recebe')" data-group="recebe" data-val="nao">
+                            <div class="opcao-icon"></div> Não recebo nada
+                        </div>
+                        <div class="opcao" onclick="selecionarOpcao(this,'recebe')" data-group="recebe" data-val="auxilio-doenca">
+                            <div class="opcao-icon"></div> Auxílio-Doença (B91)
+                        </div>
+                        <div class="opcao" onclick="selecionarOpcao(this,'recebe')" data-group="recebe" data-val="aposentadoria">
+                            <div class="opcao-icon"></div> Aposentadoria
+                        </div>
+                        <div class="opcao" onclick="selecionarOpcao(this,'recebe')" data-group="recebe" data-val="outro">
+                            <div class="opcao-icon"></div> Outro benefício
+                        </div>
+                    </div>
+                    <span class="field-error" id="err-recebe" style="display:none;margin-top:8px;">Selecione uma opção.</span>
+                </div>
+
+                <!-- P4: Faixa salarial -->
+                <div class="pergunta-bloco">
+                    <h3>4 · Faixa aproximada de contribuição ao INSS</h3>
+                    <div class="opcoes-grid">
+                        <div class="opcao" onclick="selecionarOpcao(this,'faixa')" data-group="faixa" data-val="1sm">
+                            <div class="opcao-icon"></div> Até 1 salário mínimo
+                        </div>
+                        <div class="opcao" onclick="selecionarOpcao(this,'faixa')" data-group="faixa" data-val="1-3sm">
+                            <div class="opcao-icon"></div> Entre 1 e 3 SM
+                        </div>
+                        <div class="opcao" onclick="selecionarOpcao(this,'faixa')" data-group="faixa" data-val="3-5sm">
+                            <div class="opcao-icon"></div> Entre 3 e 5 SM
+                        </div>
+                        <div class="opcao" onclick="selecionarOpcao(this,'faixa')" data-group="faixa" data-val="mais-5sm">
+                            <div class="opcao-icon"></div> Acima de 5 SM
+                        </div>
+                    </div>
+                    <span class="field-error" id="err-faixa" style="display:none;margin-top:8px;">Selecione uma opção.</span>
+                </div>
+
+                <!-- P5: Documentos -->
+                <div class="pergunta-bloco">
+                    <h3>5 · Possui algum desses documentos? <span class="opt" style="font-size:0.75rem;color:var(--gray-300);text-transform:none;letter-spacing:0;">(pode marcar mais de um)</span></h3>
+                    <div class="opcoes-grid">
+                        <div class="opcao checkbox" onclick="toggleCheckbox(this)" data-val="laudo">
+                            <div class="opcao-icon"></div> Laudo médico
+                        </div>
+                        <div class="opcao checkbox" onclick="toggleCheckbox(this)" data-val="ppp">
+                            <div class="opcao-icon"></div> PPP (Perfil Profissiográfico)
+                        </div>
+                        <div class="opcao checkbox" onclick="toggleCheckbox(this)" data-val="cnis">
+                            <div class="opcao-icon"></div> CNIS (extrato INSS)
+                        </div>
+                        <div class="opcao checkbox" onclick="toggleCheckbox(this)" data-val="nenhum">
+                            <div class="opcao-icon"></div> Nenhum desses
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn-primary" onclick="finalizarEtapa2()">
+                        Enviar para análise gratuita
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                    <button class="btn-secondary" onclick="voltarEtapa1()">← Voltar</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div><!-- /card -->
+
+    <!-- TELA DE SUCESSO -->
+    <div class="sucesso" id="tela-sucesso">
+        <div class="sucesso-icon">✅</div>
+        <h2>Informações recebidas!</h2>
+        <p>Um advogado especialista da MLR entrará em contato para analisar seu caso gratuitamente. Fique atento ao seu e-mail e telefone.</p>
+        <div style="margin-top:28px;">
+            <button class="btn-secondary" onclick="reiniciar()">Fazer novo cálculo</button>
+        </div>
+    </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+    <div class="logo">
+        <span class="logo-sigla">MLR</span>
+        <span class="logo-sub">Advogados</span>
+    </div>
+    <span class="footer-copy">&copy; <span id="ano-footer"></span> MLR Advogados. Todos os direitos reservados.</span>
+</footer>
+
+<script>
+    // ── ANO NO FOOTER ──
+    document.getElementById('ano-footer').innerText = new Date().getFullYear();
+
+    // Preenche ano atual automaticamente
+    document.getElementById('anoAtual').value = new Date().getFullYear();
+
+    // ── FORMATAÇÃO ──
+    function fmt(v) {
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+    }
+
+    // ── ERROS ──
+    function showErr(id, msg) {
+        var el = document.getElementById(id);
+        el.innerText = msg;
+        el.style.display = 'block';
+    }
+    function hideErr(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+    function addInputErr(id) { document.getElementById(id).classList.add('input-err'); }
+    function remInputErr(id) { document.getElementById(id).classList.remove('input-err'); }
+
+    // ── CALCULAR ──
+    function calcular() {
+        // Limpa erros
+        ['mediaSalarial','anoAcidente','anoAtual','mesesManuais'].forEach(function(id){ remInputErr(id); });
+        ['err-salario','err-ano-acidente','err-ano-atual','err-meses'].forEach(function(id){ hideErr(id); });
+
+        var salario   = parseFloat(document.getElementById('mediaSalarial').value);
+        var anoAc     = parseInt(document.getElementById('anoAcidente').value, 10);
+        var anoAt     = parseInt(document.getElementById('anoAtual').value, 10) || new Date().getFullYear();
+        var mesesMan  = document.getElementById('mesesManuais').value;
+        var temErro   = false;
+
+        // Validações
+        if (!salario || isNaN(salario) || salario <= 0) {
+            showErr('err-salario', 'Informe um valor válido maior que zero.');
+            addInputErr('mediaSalarial'); temErro = true;
         }
 
-        function mostrarErro(inputId, msgId, mensagem) {
-            document.getElementById(inputId).classList.add('input-error');
-            var span = document.getElementById(msgId);
-            span.innerText = mensagem;
-            span.style.display = 'block';
+        var meses;
+        if (mesesMan && mesesMan !== '') {
+            // Usa meses manuais se preenchido
+            meses = parseInt(mesesMan, 10);
+            if (isNaN(meses) || meses < 1) {
+                showErr('err-meses', 'Informe um número de meses válido.');
+                addInputErr('mesesManuais'); temErro = true;
+            }
+        } else {
+            // Calcula pelos anos
+            if (!anoAc || isNaN(anoAc) || anoAc < 1990 || anoAc > 2030) {
+                showErr('err-ano-acidente', 'Informe um ano válido (ex: 2020).');
+                addInputErr('anoAcidente'); temErro = true;
+            }
+            if (anoAt < 1990 || anoAt > 2030) {
+                showErr('err-ano-atual', 'Informe um ano válido.');
+                addInputErr('anoAtual'); temErro = true;
+            }
+            if (!temErro && anoAt < anoAc) {
+                showErr('err-ano-atual', 'O ano atual não pode ser menor que o ano do acidente.');
+                addInputErr('anoAtual'); temErro = true;
+            }
+            if (!temErro) {
+                meses = (anoAt - anoAc) * 12;
+                if (meses < 1) meses = 1;
+            }
         }
 
-        function limparErros() {
-            ['salarioEpoca', 'mesesRetroativos', 'duracaoProcesso'].forEach(function(id) {
-                document.getElementById(id).classList.remove('input-error');
-            });
-            ['error-salario', 'error-retroativos', 'error-duracao'].forEach(function(id) {
-                document.getElementById(id).style.display = 'none';
-            });
-        }
+        if (temErro) return;
 
-        document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
-            document.getElementById('anoAtual').innerText = new Date().getFullYear();
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') calcular();
-            });
+        // ── CÁLCULO ──
+        // Auxílio-Acidente mensal = média salarial × 50%
+        var valorMensal = salario * 0.5;
+
+        // Retroativo = valor mensal × meses em aberto
+        var retroativo = valorMensal * meses;
+
+        // Total bruto
+        var totalBruto = retroativo; // o mensal é o valor futuro; retroativo é o passado
+
+        // Exibe resultados
+        document.getElementById('res-mensal').innerText = fmt(valorMensal);
+        document.getElementById('res-retro').innerText  = fmt(retroativo);
+        document.getElementById('res-retro-sub').innerText = meses + ' meses em aberto';
+        document.getElementById('res-total').innerText  = fmt(totalBruto);
+
+        // Monta tabela de detalhamento
+        var linhas = [
+            { l: 'Média salarial informada',          v: fmt(salario),      dest: false },
+            { l: 'Percentual do auxílio-acidente',    v: '50%',              dest: false },
+            { l: 'Valor mensal estimado',             v: fmt(valorMensal),  dest: false },
+            { l: 'Meses em aberto (retroativo)',      v: meses + ' meses',  dest: false },
+            { l: 'Retroativo estimado (bruto)',       v: fmt(retroativo),   dest: true  },
+        ];
+
+        var html = linhas.map(function(r) {
+            return '<tr class="' + (r.dest ? 'highlight' : '') + '">'
+                + '<td>' + r.l + '</td>'
+                + '<td>' + r.v + '</td>'
+                + '</tr>';
+        }).join('');
+        document.getElementById('detalhe-table').innerHTML = html;
+
+        // Mostra resultado com animação
+        var res = document.getElementById('resultado');
+        res.style.display = 'block';
+        res.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // ── TOGGLE DETALHAMENTO ──
+    function toggleDetalhe() {
+        var body  = document.getElementById('detalhe-body');
+        var arrow = document.getElementById('detalhe-arrow');
+        var open  = body.classList.toggle('open');
+        arrow.style.transform = open ? 'rotate(180deg)' : 'rotate(0)';
+    }
+
+    // ── LIMPAR ──
+    function limpar() {
+        document.getElementById('mediaSalarial').value = '';
+        document.getElementById('anoAcidente').value   = '';
+        document.getElementById('anoAtual').value      = new Date().getFullYear();
+        document.getElementById('mesesManuais').value  = '';
+        ['mediaSalarial','anoAcidente','anoAtual','mesesManuais'].forEach(function(id){ remInputErr(id); });
+        ['err-salario','err-ano-acidente','err-ano-atual','err-meses'].forEach(function(id){ hideErr(id); });
+        document.getElementById('resultado').style.display = 'none';
+    }
+
+    // ── PROGRESSO ──
+    function setProgresso(etapa) {
+        var dot1 = document.getElementById('dot-1');
+        var dot2 = document.getElementById('dot-2');
+        var line = document.getElementById('prog-line');
+        var lbl1 = document.getElementById('lbl-1');
+        var lbl2 = document.getElementById('lbl-2');
+
+        if (etapa === 1) {
+            dot1.className = 'step-dot active';
+            dot2.className = 'step-dot';
+            line.style.width = '0%';
+            lbl1.className = 'step-label active';
+            lbl2.className = 'step-label';
+        } else {
+            dot1.className = 'step-dot done';
+            dot1.innerHTML = '✓';
+            dot2.className = 'step-dot active';
+            line.style.width = '100%';
+            lbl1.className = 'step-label done';
+            lbl2.className = 'step-label active';
+        }
+    }
+
+    // ── NAVEGAÇÃO ENTRE ETAPAS ──
+    function irParaEtapa2() {
+        document.getElementById('step-1').classList.remove('active');
+        document.getElementById('step-2').classList.add('active');
+        setProgresso(2);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function voltarEtapa1() {
+        document.getElementById('step-2').classList.remove('active');
+        document.getElementById('step-1').classList.add('active');
+        setProgresso(1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── OPÇÕES (radio) ──
+    function selecionarOpcao(el, grupo) {
+        document.querySelectorAll('[data-group="' + grupo + '"]').forEach(function(o) {
+            o.classList.remove('selected');
         });
+        el.classList.add('selected');
+        // Esconde erro do grupo
+        var errMap = { 'tipo-caso': 'err-tipo', 'data-prob': 'err-data', 'recebe': 'err-recebe', 'faixa': 'err-faixa' };
+        if (errMap[grupo]) hideErr(errMap[grupo]);
+    }
 
-        // --- CÁLCULO PRINCIPAL ---
-        function calcular() {
-            limparErros();
+    // ── CHECKBOXES ──
+    function toggleCheckbox(el) {
+        el.classList.toggle('selected');
+    }
 
-            const salarioInput          = document.getElementById('salarioEpoca').value;
-            const mesesRetroativosInput = document.getElementById('mesesRetroativos').value;
-            const duracaoProcessoInput  = document.getElementById('duracaoProcesso').value;
+    // ── FINALIZAR ETAPA 2 ──
+    function finalizarEtapa2() {
+        var temErro = false;
 
-            if (!salarioInput || !mesesRetroativosInput || !duracaoProcessoInput) {
-                alert("Por favor, preencha todos os campos.");
-                return;
-            }
-
-            const salarioEpoca      = parseFloat(salarioInput);
-            const mesesRetroativos  = parseInt(mesesRetroativosInput, 10);
-            const duracaoProcesso   = parseInt(duracaoProcessoInput, 10);
-
-            let temErro = false;
-
-            if (salarioEpoca <= 0 || Number.isNaN(salarioEpoca)) {
-                mostrarErro('salarioEpoca', 'error-salario', 'Informe um valor válido maior que zero.');
-                temErro = true;
-            }
-
-            if (Number.isNaN(mesesRetroativos) || mesesRetroativos < 1) {
-                mostrarErro('mesesRetroativos', 'error-retroativos', 'Informe pelo menos 1 mês.');
-                temErro = true;
-            } else if (mesesRetroativos > CONST_MAX_MESES_RETROATIVOS) {
-                mostrarErro('mesesRetroativos', 'error-retroativos',
-                    `O máximo permitido é ${CONST_MAX_MESES_RETROATIVOS} meses.`);
-                temErro = true;
-            }
-
-            if (Number.isNaN(duracaoProcesso) || duracaoProcesso < 1) {
-                mostrarErro('duracaoProcesso', 'error-duracao', 'Informe um número válido de meses.');
-                temErro = true;
-            }
-
-            if (temErro) return;
-
-            // Se o salário da época for menor que o salário mínimo, usar 50% do salário mínimo
-            const salarioBase     = salarioEpoca < CONST_SALARIO_MINIMO ? CONST_SALARIO_MINIMO : salarioEpoca;
-            const salarioAjustado = salarioEpoca < CONST_SALARIO_MINIMO;
-            const retroativos     = mesesRetroativos;
-            const duracao         = duracaoProcesso;
-
-            // Cálculos
-            const valorMensal  = salarioBase * CONST_PERCENTUAL_AUXILIO;
-            const totalMeses   = retroativos + duracao;
-            const valorBruto   = valorMensal * totalMeses;
-
-            // Descontos = 40% de honorários + 4 salários mínimos
-            const honorarios            = valorBruto * CONST_PERCENTUAL_HONORARIOS;
-            const descontoSalariosMinimos = 4 * CONST_SALARIO_MINIMO;
-            const totalDescontos        = honorarios + descontoSalariosMinimos;
-            const valorLiquido          = valorBruto - totalDescontos;
-
-            // Atualiza cards principais
-            document.getElementById('res-valor-mensal').innerText = formatarMoeda(valorMensal);
-            document.getElementById('res-meses-total').innerText  = totalMeses + ' meses';
-            document.getElementById('res-detalhe-meses').innerText = `Retroativos: ${retroativos} | Processo: ${duracao}`;
-            document.getElementById('res-bruto').innerText        = formatarMoeda(valorBruto);
-            document.getElementById('res-total').innerText        = formatarMoeda(valorLiquido);
-
-            // Monta tabela de detalhamento
-            const linhas = [
-                { label: 'Salário informado',         valor: formatarMoeda(salarioEpoca),     destaque: false },
-                salarioAjustado ? { label: '⚠️ Ajustado para salário mínimo', valor: formatarMoeda(salarioBase), destaque: true } : null,
-                { label: 'Desconto: 4 salários mínimos',      valor: '− ' + formatarMoeda(descontoSalariosMinimos), destaque: false },
-                { label: 'Percentual do auxílio',     valor: '50%',                       destaque: false },
-                { label: 'Valor mensal do auxílio',   valor: formatarMoeda(valorMensal),  destaque: false },
-                { label: 'Meses retroativos',         valor: retroativos + ' meses',       destaque: false },
-                { label: 'Duração estimada do processo', valor: duracao + ' meses',        destaque: false },
-                { label: 'Total de meses calculados', valor: totalMeses + ' meses',        destaque: false },
-                { label: 'Valor bruto total',         valor: formatarMoeda(valorBruto),   destaque: false },
-                { label: 'Honorários advocatícios (40%)',  valor: '− ' + formatarMoeda(honorarios),              destaque: false },
-                { label: 'Desconto: 4 salários mínimos',      valor: '− ' + formatarMoeda(descontoSalariosMinimos), destaque: false },
-                { label: 'Total de descontos',                valor: '− ' + formatarMoeda(totalDescontos),           destaque: false },
-                { label: 'Valor líquido estimado',            valor: formatarMoeda(valorLiquido),                    destaque: true  },
-            ].filter(Boolean);
-
-            const tbody = document.getElementById('tabela-detalhamento');
-            tbody.innerHTML = linhas.map((linha, i) => `
-                <tr class="${linha.destaque ? 'bg-blue-50 font-semibold' : (i % 2 === 0 ? 'bg-white' : 'bg-gray-50')}">
-                    <td class="px-4 py-3 text-gray-600 ${linha.destaque ? 'text-gray-900' : ''}">${linha.label}</td>
-                    <td class="px-4 py-3 text-right font-medium ${linha.destaque ? 'text-blue-700' : 'text-gray-800'}">${linha.valor}</td>
-                </tr>
-            `).join('');
-
-            // Mostra seção de detalhamento
-            document.getElementById('detalhamento').classList.remove('hidden');
-
-            // Animação nos cards
-            document.querySelectorAll('.result-card').forEach(card => {
-                card.classList.remove('updated');
-                void card.offsetWidth; // reflow para reiniciar animação
-                card.classList.add('updated');
-            });
-
-            // Scroll suave até o resultado
-            document.getElementById('detalhamento').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        };
-
-        // --- LIMPAR ---
-        function limpar() {
-            document.getElementById('salarioEpoca').value    = '';
-            document.getElementById('mesesRetroativos').value = '';
-            document.getElementById('duracaoProcesso').value  = '18';
-
-            limparErros();
-
-            document.getElementById('res-valor-mensal').innerText  = 'R$ 0,00';
-            document.getElementById('res-meses-total').innerText   = '0';
-            document.getElementById('res-detalhe-meses').innerText = 'Retroativos: 0 | Processo: 0';
-            document.getElementById('res-bruto').innerText         = 'R$ 0,00';
-            document.getElementById('res-total').innerText         = 'R$ 0,00';
-
-            document.getElementById('detalhamento').classList.add('hidden');
+        if (!document.querySelector('[data-group="tipo-caso"].selected')) {
+            showErr('err-tipo', 'Selecione uma opção.'); temErro = true;
+        }
+        if (!document.querySelector('[data-group="data-prob"].selected')) {
+            showErr('err-data', 'Selecione uma opção.'); temErro = true;
+        }
+        if (!document.querySelector('[data-group="recebe"].selected')) {
+            showErr('err-recebe', 'Selecione uma opção.'); temErro = true;
+        }
+        if (!document.querySelector('[data-group="faixa"].selected')) {
+            showErr('err-faixa', 'Selecione uma opção.'); temErro = true;
         }
 
-    </script>
+        if (temErro) return;
+
+        // Coleta dados para uso futuro (integração com formulário de leads)
+        var dados = {
+            tipoCaso:   document.querySelector('[data-group="tipo-caso"].selected').dataset.val,
+            dataProb:   document.querySelector('[data-group="data-prob"].selected').dataset.val,
+            recebe:     document.querySelector('[data-group="recebe"].selected').dataset.val,
+            faixa:      document.querySelector('[data-group="faixa"].selected').dataset.val,
+            documentos: Array.from(document.querySelectorAll('.opcao.checkbox.selected')).map(function(o){ return o.dataset.val; })
+        };
+        console.log('Dados do lead:', dados); // TODO: enviar para CRM/webhook
+
+        // Mostra tela de sucesso
+        document.getElementById('step-2').classList.remove('active');
+        document.querySelector('.card').style.display = 'none';
+        document.getElementById('tela-sucesso').classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── REINICIAR ──
+    function reiniciar() {
+        document.getElementById('tela-sucesso').classList.remove('active');
+        document.querySelector('.card').style.display = 'block';
+        document.getElementById('step-2').classList.remove('active');
+        document.getElementById('step-1').classList.add('active');
+        setProgresso(1);
+        document.getElementById('dot-1').innerHTML = '1';
+        limpar();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
 </body>
 </html>
