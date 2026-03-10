@@ -48,21 +48,25 @@
         .logo {
             display: flex;
             flex-direction: column;
+            align-items: flex-start;
             line-height: 1;
+            gap: 0;
         }
         .logo-sigla {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.9rem;
-            font-weight: 800;
-            color: var(--blue);
-            letter-spacing: 2px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: #cdd0db;
+            letter-spacing: 8px;
+            line-height: 1;
         }
         .logo-sub {
-            font-size: 0.7rem;
-            color: var(--gray-300);
-            letter-spacing: 3px;
+            font-size: 0.55rem;
+            color: #7a8090;
+            letter-spacing: 3.5px;
             text-transform: uppercase;
-            margin-top: 1px;
+            font-weight: 400;
+            padding-left: 21px;
         }
 
         .header-badge {
@@ -663,7 +667,8 @@
             flex-wrap: wrap;
             gap: 12px;
         }
-        footer .logo-sigla { font-size: 1.4rem; }
+        footer .logo-sigla { font-size: 1.8rem; letter-spacing: 6px; }
+        footer .logo-sub   { font-size: 0.5rem; letter-spacing: 3px; padding-left: 4px; }
         .footer-copy {
             font-size: 0.72rem;
             color: var(--gray-500);
