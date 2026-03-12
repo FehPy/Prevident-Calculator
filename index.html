@@ -933,6 +933,10 @@
                     </div>
 
                     <div class="btn-row">
+                        <button class="btn-primary" onclick="gerarPDF()">
+                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                            Baixar relatório PDF
+                        </button>
                         <button class="btn-secondary" onclick="reiniciar()">← Refazer cálculo</button>
                     </div>
                 </div>
@@ -1287,6 +1291,9 @@
         var semCorrecao   = valorMensal * qtdParcelas;
         var ganhoCorrecao = totalRetroativo - semCorrecao;
 
+        // Salva globalmente para o gerador de PDF
+        window._ultimasCompetencias = competencias;
+
         document.getElementById('res-mensal').innerText = fmt(valorMensal);
         document.getElementById('res-retro').innerText  = fmt(totalRetroativo);
         document.getElementById('res-retro-sub').innerText = qtdParcelas + ' parcelas com correção monetária';
@@ -1438,6 +1445,255 @@
         document.getElementById('dot-1').innerHTML = '1';
         limpar();
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+<!-- jsPDF para geração do relatório -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+    // ════════════════════════════════════════════════════════
+    //  GERAÇÃO DE RELATÓRIO PDF
+    // ════════════════════════════════════════════════════════
+    function gerarPDF() {
+        var { jsPDF } = window.jspdf;
+
+        var pw = 210, ph = 297;
+        var ml = 15, mr = 15;
+        var cw = pw - ml - mr;
+
+        // ── Paleta ──
+        var navy  = [15,  34,  64];
+        var white = [255, 255, 255];
+        var gray1 = [245, 246, 250];
+        var gray2 = [150, 160, 180];
+        var gray3 = [55,  65,  96];
+        var gold  = [201, 168, 76];
+        var warn  = [253, 246, 220];
+        var warnB = [200, 160, 30];
+
+        // ── Dados a capturar antes de criar o doc ──
+        var mesNomes = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        var mesVal   = parseInt(document.getElementById('mesAcidente').value, 10) || 0;
+        var anoVal   = document.getElementById('anoAcidente').value || '—';
+        var mesesVal = document.getElementById('mesesManuais').value;
+        var dataAcidente = mesVal ? mesNomes[mesVal] + ' / ' + anoVal : (mesesVal ? mesesVal + ' meses atrás' : anoVal);
+
+        var salarioBruto = 'R$ ' + (document.getElementById('mediaSalarial').value || '—');
+        var mensal    = document.getElementById('res-mensal').innerText;
+        var vencidas  = document.getElementById('res-retro').innerText;
+        var vincendas = document.getElementById('res-vincendas').innerText;
+        var total     = document.getElementById('res-total').innerText;
+
+        var hoje = new Date();
+        var dataEmissao = hoje.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+        // ── Funções reutilizáveis de cabeçalho e rodapé ──
+        function desenharCabecalho(doc) {
+            doc.setFillColor(...navy);
+            doc.rect(0, 0, pw, 24, 'F');
+
+            // Logo MLR
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(18);
+            doc.setTextColor(205, 208, 219);
+            doc.text('MLR', ml, 11);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(6);
+            doc.setTextColor(...gray2);
+            doc.text('ADVOGADOS', ml + 2, 16);
+
+            // Título direita
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8.5);
+            doc.setTextColor(...white);
+            doc.text('RELATÓRIO DE CÁLCULO', pw - mr, 10, { align: 'right' });
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7);
+            doc.setTextColor(...gray2);
+            doc.text('Auxílio-Acidente INSS  ·  Emitido em ' + dataEmissao, pw - mr, 16, { align: 'right' });
+        }
+
+        function desenharRodape(doc, numPagina, totalPaginas) {
+            // Faixa amarela de aviso
+            doc.setFillColor(...warn);
+            doc.rect(0, ph - 16, pw, 16, 'F');
+            doc.setDrawColor(...warnB);
+            doc.setLineWidth(0.4);
+            doc.line(0, ph - 16, pw, ph - 16);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(6.2);
+            doc.setTextColor(120, 90, 10);
+            doc.text('⚠  ESTIMATIVA INFORMATIVA:', ml, ph - 9.5);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(6);
+            doc.setTextColor(100, 75, 10);
+            doc.text('Este relatório é apenas uma estimativa. O valor real pode sofrer alterações após análise da documentação pelo INSS.', ml + 33, ph - 9.5);
+
+            doc.setFontSize(5.8);
+            doc.setTextColor(...gray2);
+            doc.text('MLR Advogados', ml, ph - 4);
+            doc.text('Página ' + numPagina + ' de ' + totalPaginas, pw - mr, ph - 4, { align: 'right' });
+        }
+
+        // ── Gera linhas da tabela ──
+        var linhas = [];
+        if (window._ultimasCompetencias && window._ultimasCompetencias.length > 0) {
+            window._ultimasCompetencias.forEach(function(c) {
+                linhas.push([
+                    c.chave,
+                    'R$ ' + c.original.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
+                    c.fator.toFixed(6),
+                    'R$ ' + c.corrigido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+                ]);
+            });
+        }
+
+        // ── Cria documento ──
+        var doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        desenharCabecalho(doc);
+
+        var y = 32;
+
+        // ══ BLOCO DE DADOS ══
+        doc.setFillColor(...gray1);
+        doc.roundedRect(ml, y, cw, 30, 2, 2, 'F');
+
+        var c1 = ml + 6, c2 = ml + cw / 2 + 4;
+
+        // Linha 1
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6.5);
+        doc.setTextColor(...gray2);
+        doc.text('Data do acidente', c1, y + 7);
+        doc.text('Salário bruto informado', c2, y + 7);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...gray3);
+        doc.text(dataAcidente, c1, y + 13);
+        doc.text(salarioBruto, c2, y + 13);
+
+        // Linha 2
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6.5);
+        doc.setTextColor(...gray2);
+        doc.text('Benefício mensal estimado (50%)', c1, y + 21);
+        doc.text('Índice de correção aplicado', c2, y + 21);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...gray3);
+        doc.text(mensal, c1, y + 27);
+        doc.text('INPC — IBGE', c2, y + 27);
+
+        y += 38;
+
+        // ══ TÍTULO TABELA ══
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(...navy);
+        doc.text('Detalhamento por competência', ml, y);
+        y += 5;
+
+        // ══ TABELA ══
+        var paginaAtual = 1;
+        doc.autoTable({
+            startY: y,
+            head: [['Competência', 'Valor Original', 'Índice Acumulado', 'Valor Corrigido']],
+            body: linhas,
+            margin: { left: ml, right: mr, bottom: 20 },
+            tableWidth: cw,
+            styles: {
+                fontSize: 7.5,
+                cellPadding: 2.6,
+                font: 'helvetica',
+                textColor: gray3,
+                lineColor: [220, 224, 235],
+                lineWidth: 0.2
+            },
+            headStyles: {
+                fillColor: navy,
+                textColor: white,
+                fontStyle: 'bold',
+                fontSize: 7.5,
+                cellPadding: 3
+            },
+            alternateRowStyles: { fillColor: gray1 },
+            columnStyles: {
+                0: { halign: 'center' },
+                1: { halign: 'right'  },
+                2: { halign: 'center' },
+                3: { halign: 'right'  }
+            },
+            didDrawPage: function(data) {
+                // Cabeçalho e rodapé em cada nova página
+                if (data.pageNumber > 1) desenharCabecalho(doc);
+                paginaAtual = data.pageNumber;
+            }
+        });
+
+        // Total de páginas (estimado; vamos redesenhar rodapés depois)
+        var totalPaginas = doc.getNumberOfPages();
+
+        // ══ RESUMO FINAL ══
+        y = doc.lastAutoTable.finalY + 8;
+        if (y > ph - 60) { doc.addPage(); desenharCabecalho(doc); y = 32; }
+
+        var boxH = 36;
+        doc.setFillColor(...navy);
+        doc.roundedRect(ml, y, cw, boxH, 2, 2, 'F');
+
+        var bx1 = ml + 7;
+        var bx2 = ml + cw / 3 + 4;
+        var bx3 = ml + (cw / 3) * 2 + 1;
+        var by  = y + 9;
+
+        // Labels
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6);
+        doc.setTextColor(...gray2);
+        doc.text('PARCELAS VENCIDAS', bx1, by);
+        doc.text('PARCELAS VINCENDAS', bx2, by);
+        doc.text('VALOR TOTAL DA CAUSA', bx3, by);
+
+        // Valores
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(...white);
+        doc.text(vencidas, bx1, by + 8);
+
+        doc.setTextColor(210, 170, 255);
+        doc.text(vincendas, bx2, by + 8);
+
+        doc.setTextColor(...gold);
+        doc.setFontSize(11);
+        doc.text(total, bx3, by + 8);
+
+        // Sublabels
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(5.8);
+        doc.setTextColor(...gray2);
+        doc.text('Com correção INPC', bx1, by + 15);
+        doc.text('12 meses futuros s/ correção', bx2, by + 15);
+        doc.text('Vencidas + Vincendas', bx3, by + 15);
+
+        doc.setFontSize(5.5);
+        doc.setTextColor(150, 130, 80);
+        doc.text('* Antes de honorários advocatícios', bx3, by + 20);
+
+        totalPaginas = doc.getNumberOfPages();
+
+        // ══ Rodapé em TODAS as páginas ══
+        for (var p = 1; p <= totalPaginas; p++) {
+            doc.setPage(p);
+            desenharRodape(doc, p, totalPaginas);
+        }
+
+        doc.save('relatorio-auxilio-acidente-mlr.pdf');
     }
 </script>
 </body>
